@@ -11,6 +11,9 @@ Vagrant.configure("2") do |config|
     vb.customize ["modifyvm", :id, "--cpus", "2"]
   end
 
+  # configure the shared directory
+  shared_dir = "/vagrant"
+
   # configure the networking ports
   # staff interface
   config.vm.network :forwarded_port, guest: 8080, host: 8080, auto_correct: true
@@ -23,4 +26,6 @@ Vagrant.configure("2") do |config|
   # Solr admin interface
   config.vm.network :forwarded_port, guest: 8090, host: 8090, auto_correct: true
 
+  # configuration shell scripts
+  config.vm.provision :shell, path: "./scripts/add-packages.sh", :args => shared_dir, :privileged => false
 end
