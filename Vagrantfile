@@ -28,4 +28,5 @@ Vagrant.configure("2") do |config|
 
   # configuration shell scripts
   config.vm.provision :shell, path: "./scripts/add-packages.sh", :args => shared_dir, :privileged => false
+  config.vm.provision :shell, path: "./scripts/add-aspace.sh", :args => shared_dir, :privileged => false
 end
