@@ -37,9 +37,4 @@ evalyum python36u-pip
 
 `sudo yum install -q -y @"Development Tools" >> ${DI_LOG_DIR}/${DI_LOG_FILE} 2>&1`
 
-#sudo mkdir /home/vagrant/bin
-#chown -R /home/vagrant/bin vagrant
-#curl -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer > /home/vagrant/bin/pyenv-installer
-#chmod 755 /home/vagrant/bin/pyenv-installer
-#exec /home/vagrant/bin/pyenv-installer
 
