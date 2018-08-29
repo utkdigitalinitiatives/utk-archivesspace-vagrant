@@ -6,6 +6,7 @@ import json
 import sys
 import os
 import logging
+import glob
 import ConfigParser
 # set this variables to match the base URL of your ArchivesSpace installation
 #baseURL = 'http://albatross.lib.utk.edu:8089'
@@ -16,12 +17,15 @@ import ConfigParser
 # password = password
 
 
-def post_data(headers, object_data, object_type):
+# if I were to really do this right, i would divide all this into objects but
+# not enough time right now.
+
+def post_data(configDict, object_data, object_type):
 	post_response = requests.post("/repositories/"+repository+"/accessions/"+object_type, headers=headers, data=object_data).json()
 	print post_response
 
 
-def get_data(filepath):
+def load_json_contents(filepath):
 	if os.path.isfile(file):
 		with open (file) as json_data:
 			return json.load(json_data)
@@ -30,44 +34,44 @@ def get_type(json):
 	type = json['jsonmodel_type']
 	return type
 
-def export_accessions (headers):
+def export_accessions (configDict):
 
     # Gets the IDs of all accessions in the repository
-    accessionIds = requests.get(baseURL + "/repositories/" + configDict[repostitory] + "/accessions?all_ids=true", headers=headers)
+    accessionIds = requests.get(configDict['baseURL'] + "/repositories/" + configDict['repostitory'] + "/accessions?all_ids=true", headers=headers)
 
     # Exports EAD for all resources whose IDs contain 'FA'
     for id in accessionIds.json():
-    	accession = (requests.get(baseURL + "/repositories/" + configDict[repostitory] +  "/accessions/" + str(id), headers=headers)).json()
+    	accession = (requests.get(configDict['baseURL'] + "/repositories/" + configDict['repostitory'] +  "/accessions/" + str(id), headers=headers)).json()
     	json_accession = json.dumps(accession)
     #	# Sets the location where the files should be saved
     	destination = configDict[archiveFolder]
-    	f = open(destination  + str(id) + "_accession.json", 'a')
+    	f = open(destinatio n+ '/assession_'  + str(id) + ".json", 'a')
     	f.write(json_accession)
     	f.close
     	print (str(id) + "_accession.json exported to " + destination)
 
-def export_resources (headers):
+def export_resources (configDict):
     # Gets the IDs of all resources in the repository
-    resourceIds = requests.get(baseURL + "/repositories/"+repository+"/resources?all_ids=true", headers=headers)
+    resourceIds = requests.get(configDict['baseURL'] + "/repositories/"+configDict['repository']+"/resources?all_ids=true", headers=configDict['headers'])
 
     # Exports EAD for all resources whose IDs contain 'FA'
     for id in resourceIds.json():
-    	resource = (requests.get(baseURL + "/repositories/"+repository+"/resources/" + str(id), headers=headers)).json()
+    	resource = (requests.get(configDict['baseURL'] + "/repositories/"+configDict['repository']+"/resources/" + str(id), headers=configDict['headers'])).json()
     	json_resource = json.dumps(resource)
     ##	ead = requests.get(baseURL + "/repositories/"+repository+"/resource_descriptions/"+str(id)+".xml", headers=headers).text
     #	# Sets the location where the files should be saved
-    	destination = configDict[archiveFolder]
-    	f = open(destination  + str(id) +".json", 'a')
-    	f.write(json_resource)
-    	f.close
-    	print (str(id) + ".json exported to " + destination)
+    	archiveFolder = configDict['archiveFolder']
+    	jsonFile = open(archiveFolder  + '/resource_' + str(id) +".json", 'a')
+    	jsonFile.write(json_resource)
+    	jsonFile.close
+    	print (str(id) + ".json exported to " + archiveFolder)
 
 
-def create_accessions (configDict) :
+def create_objects(configDict) :
     # create all the accessions in the replica repository
-
-    for filepath in glob.glob(os.path.join('/vhosts/aspace/json', '*.json')):
-    	json_data = get_data(filepath)
+    archiveFolder = configDict['archiveFolder']
+    for filepath in glob.glob(os.path.join('archiveFolder', '*.json')):
+    	json_data = load_json_contents(filepath)
     	json_type = get_type(json_data)
     	post_data(configDict['headers'],json_data, json_type)
 
@@ -91,7 +95,9 @@ def main():
     	print ("Authenticated!")
 
     configDict['headers'] = {'X-ArchivesSpace-Session':session}
-
+    export_accessions (configDict)
+    export_resources (configDict)
+    create_accessions (configDict)
 
 if __name__ == "__main__":
     main()
